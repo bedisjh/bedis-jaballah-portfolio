@@ -1,0 +1,862 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --font-display: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-body: 'DM Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'Space Mono', monospace;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: #08080b;
+    color: #f4f4f6;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    letter-spacing: -0.025em;
+  }
+}
+
+/* ==========================================================================
+   REFERENCE 01: 3D CHECKERBOARD BACKGROUND (Exact from Uiverse by escannord)
+   ========================================================================== */
+.escannord-checkerboard {
+  width: 100%;
+  height: 100%;
+  --bg: linear-gradient(
+      45deg,
+      rgba(15, 15, 20, 0.9) 25%,
+      transparent 25%,
+      transparent 75%,
+      rgba(15, 15, 20, 0.9) 75%,
+      rgba(15, 15, 20, 0.9)
+    ),
+    linear-gradient(
+      45deg,
+      rgba(15, 15, 20, 0.9) 25%,
+      rgba(35, 35, 48, 0.4) 25%,
+      rgba(35, 35, 48, 0.4) 75%,
+      rgba(15, 15, 20, 0.9) 75%,
+      rgba(15, 15, 20, 0.9)
+    );
+  --bgsize: 60px 60px;
+  --bgposition: 0 0, 30px 30px;
+  background-color: #08080b;
+  background-image: var(--bg);
+  background-size: var(--bgsize);
+  background-position: var(--bgposition);
+  position: relative;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+  overflow: hidden;
+  box-shadow: inset 0px 0px 500px rgb(8, 8, 11);
+}
+
+.escannord-checkerboard::before {
+  content: "";
+  width: 100%;
+  height: 160%;
+  box-shadow: 0px -100px 500px black, inset 0px 100px 500px rgb(8, 8, 11);
+  position: absolute;
+  top: 50%;
+  background-image: var(--bg);
+  background-size: var(--bgsize);
+  background-position: var(--bgposition);
+  transform-origin: top;
+  transform: rotateX(80deg);
+}
+
+/* ==========================================================================
+   REFERENCE 02: 3D CUBE ANIMATION (Exact from Uiverse by chase2k25)
+   Adapted for Bedis Jaballah: Black, White, Electric Purple, Blue accents
+   ========================================================================== */
+.chase-cube-container {
+  --bg: #08080b;
+  --ink: #000000;
+  --paper: #ffffff;
+  --accent-1: #3b82f6; /* Electric Blue */
+  --accent-2: #a855f7; /* Electric Purple */
+  --accent-3: #c084fc; /* Lavender Purple */
+  --size: 110px;
+  --half: 55px;
+  --explode-dist: 110px;
+  --smooth-snap: cubic-bezier(0.85, 0, 0.15, 1);
+
+  margin: 0;
+  height: 220px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  perspective: 1500px;
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .chase-cube-container {
+    --size: 130px;
+    --half: 65px;
+    --explode-dist: 135px;
+    height: 260px;
+  }
+}
+
+.chase-cube-stage {
+  position: relative;
+  width: var(--size);
+  height: var(--size);
+  transform-style: preserve-3d;
+  animation: stageJump 4s var(--smooth-snap) infinite;
+  will-change: transform;
+}
+
+@keyframes stageJump {
+  0%, 100% {
+    transform: scale(1) rotateX(-20deg) rotateY(0deg);
+  }
+  50% {
+    transform: scale(1.22) rotateX(160deg) rotateY(180deg);
+  }
+}
+
+.chase-cube {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  animation: autoRotate 8s linear infinite;
+  will-change: transform;
+}
+
+@keyframes autoRotate {
+  0% {
+    transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+  }
+  100% {
+    transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg);
+  }
+}
+
+.chase-cube-container.is-paused .chase-cube-stage,
+.chase-cube-container.is-paused .chase-cube,
+.chase-cube-container.is-paused .shadow-floor,
+.chase-cube-container.is-paused .pop-word {
+  animation-play-state: paused !important;
+}
+
+.chase-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: var(--paper);
+  border: 4px solid var(--ink);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  backface-visibility: visible;
+  overflow: hidden;
+  box-shadow: 6px 6px 0 var(--ink), 0 0 25px rgba(168, 85, 247, 0.2);
+  transition: transform 1.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 1s ease, opacity 0.8s ease;
+  will-change: transform;
+}
+
+.chase-face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.f-1 {
+  transform: rotateY(0deg) translateZ(var(--half));
+  background: var(--accent-1);
+}
+.f-2 {
+  transform: rotateY(180deg) translateZ(var(--half));
+  background: var(--accent-2);
+}
+.f-3 {
+  transform: rotateY(90deg) translateZ(var(--half));
+  background: var(--accent-3);
+}
+.f-4 {
+  transform: rotateY(-90deg) translateZ(var(--half));
+  background: var(--paper);
+}
+.f-5 {
+  transform: rotateX(90deg) translateZ(var(--half));
+  background: #9333ea;
+}
+.f-6 {
+  transform: rotateX(-90deg) translateZ(var(--half));
+  background: #2563eb;
+}
+
+/* ==========================================================================
+   APPLE KEYNOTE STYLE: EXPLODED VIEW & SLOW-MOTION INTERNAL TECH SHOWCASE
+   Smooth slow-motion transition between assembled and exploded state
+   ========================================================================== */
+.chase-cube-container.is-exploded .chase-cube {
+  animation: autoRotate 18s linear infinite;
+}
+
+.chase-cube-container.is-exploded .chase-cube-stage {
+  animation: stageGentleFloat 8s ease-in-out infinite alternate;
+}
+
+@keyframes stageGentleFloat {
+  0% {
+    transform: scale(1.04) rotateX(-14deg) rotateY(-8deg);
+  }
+  100% {
+    transform: scale(1.12) rotateX(14deg) rotateY(18deg);
+  }
+}
+
+/* Exploded Disassembly Positions */
+.chase-cube-container.is-exploded .f-1 {
+  transform: rotateY(0deg) translateZ(var(--explode-dist));
+  box-shadow: 0 0 35px rgba(59, 130, 246, 0.5), 6px 6px 0 var(--ink);
+}
+.chase-cube-container.is-exploded .f-2 {
+  transform: rotateY(180deg) translateZ(var(--explode-dist));
+  box-shadow: 0 0 35px rgba(168, 85, 247, 0.5), 6px 6px 0 var(--ink);
+}
+.chase-cube-container.is-exploded .f-3 {
+  transform: rotateY(90deg) translateZ(var(--explode-dist));
+  box-shadow: 0 0 35px rgba(192, 132, 252, 0.5), 6px 6px 0 var(--ink);
+}
+.chase-cube-container.is-exploded .f-4 {
+  transform: rotateY(-90deg) translateZ(var(--explode-dist));
+  box-shadow: 0 0 35px rgba(255, 255, 255, 0.4), 6px 6px 0 var(--ink);
+}
+.chase-cube-container.is-exploded .f-5 {
+  transform: rotateX(90deg) translateZ(var(--explode-dist));
+  box-shadow: 0 0 35px rgba(147, 51, 234, 0.5), 6px 6px 0 var(--ink);
+}
+.chase-cube-container.is-exploded .f-6 {
+  transform: rotateX(-90deg) translateZ(var(--explode-dist));
+  box-shadow: 0 0 35px rgba(37, 99, 235, 0.5), 6px 6px 0 var(--ink);
+}
+
+/* Apple-Style Internal Tech Micro-Architecture Core */
+.cube-tech-core {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  left: calc(50% - 30px);
+  top: calc(50% - 30px);
+  transform-style: preserve-3d;
+  background: radial-gradient(circle at 30% 30%, #1e1b4b 0%, #09090f 100%);
+  border: 1.5px solid rgba(168, 85, 247, 0.7);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 30px rgba(168, 85, 247, 0.6), inset 0 0 15px rgba(6, 182, 212, 0.4);
+  transition: opacity 0.8s ease, transform 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0.15;
+  transform: scale(0.6);
+  pointer-events: none;
+}
+
+.chase-cube-container.is-exploded .cube-tech-core {
+  opacity: 1;
+  transform: scale(1) translateZ(0);
+}
+
+.tech-core-chip {
+  width: 34px;
+  height: 34px;
+  background: linear-gradient(135deg, #181825, #0c0a18);
+  border: 1px solid rgba(6, 182, 212, 0.8);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: inset 0 0 8px rgba(6, 182, 212, 0.5);
+}
+
+.tech-core-chip::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 8px;
+  border: 1px dashed rgba(168, 85, 247, 0.5);
+  animation: spin 10s linear infinite;
+}
+
+.tech-core-die {
+  width: 14px;
+  height: 14px;
+  background: linear-gradient(45deg, #a855f7, #06b6d4);
+  border-radius: 3px;
+  box-shadow: 0 0 12px #a855f7;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.chase-face::before {
+  content: "";
+  position: absolute;
+  width: 150%;
+  height: 20px;
+  background: var(--ink);
+  transform: rotate(-45deg) translateY(-40px);
+  opacity: 0.18;
+}
+
+.panel-num {
+  font-family: 'Space Mono', "Arial Black", sans-serif;
+  font-size: 30px;
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1;
+  margin: 0;
+  transform: skew(-10deg);
+  z-index: 2;
+}
+
+.panel-label {
+  font-family: var(--font-display), "Arial Black", sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  background: var(--ink);
+  color: #fff;
+  padding: 2px 7px;
+  margin-top: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  z-index: 2;
+}
+
+.pop-burst {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.pop-word {
+  position: absolute;
+  font-family: var(--font-display), "Arial Black", sans-serif;
+  font-size: 38px;
+  font-weight: 900;
+  color: #ffffff;
+  -webkit-text-stroke: 2px var(--ink);
+  text-shadow: 4px 4px 0 var(--accent-2);
+  opacity: 0;
+  animation: comicFlash 4s var(--smooth-snap) infinite;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+@keyframes comicFlash {
+  0%, 48%, 52%, 100% {
+    opacity: 0;
+    transform: scale(0.5) rotate(-20deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.35) rotate(5deg);
+  }
+}
+
+.shadow-floor {
+  position: absolute;
+  bottom: -60px;
+  width: 150px;
+  height: 35px;
+  background: radial-gradient(ellipse at center, rgba(168, 85, 247, 0.45) 0%, rgba(59, 130, 246, 0.18) 45%, transparent 75%);
+  border-radius: 50%;
+  filter: blur(10px);
+  animation: shadowPulse 4s var(--smooth-snap) infinite;
+}
+
+@keyframes shadowPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(0.4);
+    opacity: 0.15;
+  }
+}
+
+/* ==========================================================================
+   REFERENCE 03: MINECRAFT CHEST (Exact from Uiverse by mamyapro123)
+   ========================================================================== */
+.mc-environment {
+  --w: 140px;
+  --d: 140px;
+  --h-base: 100px;
+  --h-lid: 40px;
+
+  /* EXACT Colors Sampled from Reference */
+  --mc-border: #251a10; /* Dark grey/brown iron banding */
+  --mc-wood: #825425; /* Base oak wood color */
+  --mc-wood-light: #996531; /* Plank top edge highlight */
+  --mc-wood-dark: #593615; /* Plank bottom edge shadow */
+
+  --mc-latch-light: #d1d1d1; /* Top of the metal latch */
+  --mc-latch-base: #8f8f8f; /* Middle of the metal latch */
+  --mc-latch-dark: #565656; /* Bottom of the metal latch */
+  --mc-latch-outline: #1a1a1a; /* Dark outline for the metal */
+
+  --mc-void: #050302; /* Inside the chest */
+
+  margin: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.mc-chest-wrapper {
+  position: relative;
+  width: 280px;
+  height: 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  perspective: 1200px;
+  margin-top: 20px;
+  margin-bottom: 30px;
+}
+
+/* 3D Isometric Chest Rig */
+.mc-chest {
+  position: relative;
+  width: var(--w);
+  height: calc(var(--h-base) + var(--h-lid));
+  transform-style: preserve-3d;
+  transform: rotateX(-24deg) rotateY(-40deg);
+  transition: transform 0.4s ease;
+}
+
+/* Contact Floor Shadow */
+.mc-chest-shadow {
+  position: absolute;
+  bottom: -24px;
+  left: 50%;
+  width: 180px;
+  height: 95px;
+  transform: translateX(-50%) rotateX(65deg);
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.8) 0%, rgba(168, 85, 247, 0.2) 45%, transparent 75%);
+  border-radius: 50%;
+  filter: blur(10px);
+  pointer-events: none;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+  opacity: 0.85;
+}
+
+.mc-chest-shadow.is-open {
+  transform: translateX(-50%) rotateX(65deg) scale(1.15);
+  opacity: 0.95;
+}
+
+.chest-part {
+  position: absolute;
+  left: 0;
+  width: var(--w);
+  transform-style: preserve-3d;
+}
+
+/* Base Configuration */
+.chest-base {
+  top: var(--h-lid);
+  height: var(--h-base);
+}
+
+/* Lid Configuration & Precise Hinge */
+.chest-lid {
+  top: 0;
+  height: var(--h-lid);
+  transform-origin: 50% var(--h-lid) -70px;
+  transition: transform 0.55s cubic-bezier(0.2, 1.2, 0.4, 1);
+}
+
+.chest-lid.is-open {
+  transform: rotateX(105deg);
+}
+
+/* Base Styles & Procedural Pixel Texture */
+.c-face {
+  position: absolute;
+  box-sizing: border-box;
+  background-color: var(--mc-wood);
+  border: 10px solid var(--mc-border);
+  background-image: 
+    repeating-linear-gradient(
+      to bottom,
+      var(--mc-wood-light) 0px,
+      var(--mc-wood-light) 4px,
+      transparent 4px,
+      transparent 16px,
+      var(--mc-wood-dark) 16px,
+      var(--mc-wood-dark) 20px
+    ),
+    repeating-linear-gradient(
+      to right,
+      transparent 0px,
+      transparent 10px,
+      rgba(0, 0, 0, 0.06) 10px,
+      rgba(0, 0, 0, 0.06) 20px,
+      rgba(255, 255, 255, 0.06) 20px,
+      rgba(255, 255, 255, 0.06) 40px,
+      rgba(0, 0, 0, 0.12) 40px,
+      rgba(0, 0, 0, 0.12) 50px
+    );
+}
+
+.base-front, .lid-front { filter: brightness(1); }
+.base-left, .lid-left   { filter: brightness(0.85); }
+.base-right, .lid-right { filter: brightness(0.65); }
+.base-back, .lid-back   { filter: brightness(0.5); }
+.lid-top                { filter: brightness(1.2); }
+
+/* Assembling Base Geometry */
+.base-front {
+  width: var(--w);
+  height: var(--h-base);
+  transform: translateZ(70px);
+}
+.base-back {
+  width: var(--w);
+  height: var(--h-base);
+  transform: rotateY(180deg) translateZ(70px);
+}
+.base-left {
+  width: var(--d);
+  height: var(--h-base);
+  transform: rotateY(-90deg) translateZ(70px);
+}
+.base-right {
+  width: var(--d);
+  height: var(--h-base);
+  transform: rotateY(90deg) translateZ(70px);
+}
+.base-bottom {
+  width: var(--w);
+  height: var(--d);
+  transform: rotateX(-90deg) translateZ(calc(var(--h-base) - 70px));
+  background: var(--mc-border);
+}
+.base-top {
+  width: var(--w);
+  height: var(--d);
+  transform: rotateX(90deg) translateZ(70px);
+  background-color: var(--mc-void);
+  background-image: none;
+  box-shadow: inset 0 0 40px #000;
+  transition: box-shadow 0.5s ease;
+}
+
+.chest-lid.is-open ~ .chest-base .base-top,
+.mc-chest:has(.chest-lid.is-open) .base-top {
+  box-shadow: inset 0 0 35px rgba(168, 85, 247, 0.65), 0 0 25px rgba(168, 85, 247, 0.4);
+}
+
+/* Assembling Lid Geometry */
+.lid-front {
+  width: var(--w);
+  height: var(--h-lid);
+  transform: translateZ(70px);
+}
+.lid-back {
+  width: var(--w);
+  height: var(--h-lid);
+  transform: rotateY(180deg) translateZ(70px);
+}
+.lid-left {
+  width: var(--d);
+  height: var(--h-lid);
+  transform: rotateY(-90deg) translateZ(70px);
+}
+.lid-right {
+  width: var(--d);
+  height: var(--h-lid);
+  transform: rotateY(90deg) translateZ(70px);
+}
+.lid-top {
+  width: var(--w);
+  height: var(--d);
+  transform: rotateX(90deg) translateZ(70px);
+}
+.lid-bottom {
+  width: var(--w);
+  height: var(--d);
+  transform: rotateX(-90deg) translateZ(calc(var(--h-lid) - 70px));
+  background-color: var(--mc-wood-dark);
+  background-image: none;
+  border: 10px solid var(--mc-border);
+}
+
+/* Solid 3D Metal Latch Rig (6-faced) */
+.mc-latch {
+  position: absolute;
+  width: 20px;
+  height: 40px;
+  left: calc(50% - 10px);
+  top: calc(var(--h-lid) - 20px);
+  transform-style: preserve-3d;
+  transform: translateZ(75px);
+}
+
+.latch-f {
+  position: absolute;
+  box-sizing: border-box;
+  background-color: var(--mc-latch-base);
+  border: 2px solid var(--mc-latch-outline);
+}
+
+.latch-front {
+  width: 20px;
+  height: 40px;
+  transform: translateZ(5px);
+  background: linear-gradient(
+    to bottom,
+    var(--mc-latch-light) 0px,
+    var(--mc-latch-light) 10px,
+    var(--mc-latch-base) 10px,
+    var(--mc-latch-base) 28px,
+    var(--mc-latch-dark) 28px
+  );
+}
+.latch-back {
+  width: 20px;
+  height: 40px;
+  transform: rotateY(180deg) translateZ(5px);
+}
+.latch-left {
+  width: 10px;
+  height: 40px;
+  left: 5px;
+  transform: rotateY(-90deg) translateZ(10px);
+  background: var(--mc-latch-dark);
+}
+.latch-right {
+  width: 10px;
+  height: 40px;
+  left: 5px;
+  transform: rotateY(90deg) translateZ(10px);
+  background: var(--mc-latch-dark);
+}
+.latch-top {
+  width: 20px;
+  height: 10px;
+  top: 15px;
+  transform: rotateX(90deg) translateZ(20px);
+  background: var(--mc-latch-light);
+}
+.latch-bottom {
+  width: 20px;
+  height: 10px;
+  top: 15px;
+  transform: rotateX(-90deg) translateZ(20px);
+  background: var(--mc-latch-dark);
+}
+
+/* UI Status Text */
+.mc-chest-text {
+  margin-top: 50px;
+  font-family: 'Space Mono', ui-monospace, "Courier New", monospace;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #aaaaaa;
+  font-size: 15px;
+  text-align: center;
+  letter-spacing: 0.1em;
+  text-shadow: 2px 2px 0 #151515;
+  transition: transform 0.2s, color 0.2s;
+  max-width: 280px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mc-chest-wrapper:hover .mc-chest-text {
+  color: #ffff55;
+  transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   REFERENCE 04: GLOWING ACHIEVEMENT CARD (Uiverse by Spacious74)
+   ========================================================================== */
+.achievement-card {
+  position: relative;
+  background: radial-gradient(circle at 50% 0%, #171526 0%, #0d0d12 75%);
+  border: 1px solid rgba(168, 85, 247, 0.18);
+  border-radius: 18px;
+  overflow: hidden;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.achievement-card:hover {
+  border-color: rgba(168, 85, 247, 0.45);
+  box-shadow: 0 12px 35px -10px rgba(168, 85, 247, 0.25);
+  transform: translateY(-4px);
+}
+
+.card-orbit-dot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #d8b4fe;
+  box-shadow: 0 0 12px 3px #a855f7, 0 0 24px 6px #7c3aed;
+  offset-path: rect(0 100% 100% 0 round 18px);
+  animation: orbitTrack 7s linear infinite;
+}
+
+@keyframes orbitTrack {
+  0% { offset-distance: 0%; }
+  100% { offset-distance: 100%; }
+}
+
+.card-light-ray {
+  position: absolute;
+  top: -40px;
+  left: 20%;
+  width: 60%;
+  height: 90px;
+  background: radial-gradient(ellipse at center, rgba(168, 85, 247, 0.22) 0%, transparent 70%);
+  filter: blur(12px);
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   REFERENCE 05: ANIMATED STAR PRELOADER (Exact from Uiverse by narmesh_sah)
+   ========================================================================== */
+.star-preloader-container {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 6px #a855f7);
+}
+
+.star-crack {
+  position: absolute;
+  width: 32px;
+  aspect-ratio: 1;
+  background-color: #fef3fc;
+  clip-path: polygon(
+    50% 0%,
+    61% 35%,
+    98% 35%,
+    68% 57%,
+    79% 91%,
+    50% 70%,
+    21% 91%,
+    32% 57%,
+    2% 35%,
+    39% 35%
+  );
+  animation: starRotate 6s infinite linear;
+}
+
+.crack1 {
+  width: 34px;
+}
+.crack2 {
+  width: 44px;
+  animation-delay: 1s;
+  background-color: #f3e8ff;
+}
+.crack3 {
+  width: 54px;
+  animation-delay: 1.5s;
+  background-color: #e9d5ff;
+}
+.crack4 {
+  width: 64px;
+  animation-delay: 2s;
+  background-color: #d8b4fe;
+}
+.crack5 {
+  width: 76px;
+  animation-delay: 2.5s;
+  background-color: #c084fc;
+}
+
+@keyframes starRotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==========================================================================
+   REFERENCE 06: UIVERSE 3D TACTILE CARDS & 3D BUTTONS
+   ========================================================================== */
+.uiverse-3d-card-wrapper {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.uiverse-3d-card {
+  transform-style: preserve-3d;
+  transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.25s ease;
+  will-change: transform;
+}
+
+.uiverse-3d-layer-1 {
+  transform: translateZ(12px);
+  transform-style: preserve-3d;
+}
+
+.uiverse-3d-layer-2 {
+  transform: translateZ(24px);
+  transform-style: preserve-3d;
+}
+
+.uiverse-3d-layer-3 {
+  transform: translateZ(36px);
+  transform-style: preserve-3d;
+}
+
+/* Uiverse 3D Push Button */
+.uiverse-3d-button {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  box-shadow: 0 5px 0 rgb(88, 28, 135), 0 8px 16px rgba(0, 0, 0, 0.6);
+}
+
+.uiverse-3d-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 rgb(88, 28, 135), 0 12px 24px rgba(168, 85, 247, 0.4);
+}
+
+.uiverse-3d-button:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 rgb(88, 28, 135), 0 4px 8px rgba(0, 0, 0, 0.8);
+}
+
+/* Reduced motion preference: only reduce aggressive flashing without collapsing 3D transforms */
+@media (prefers-reduced-motion: reduce) {
+  .pop-word {
+    animation: none;
+    opacity: 0;
+  }
+}
+
